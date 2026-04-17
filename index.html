@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>Passport Photo Maker - @mantoshlive Edition</title>
+    <link rel="stylesheet" href="cropper.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; text-align: center; background: #f4f7f6; padding: 20px; color: #333; }
+        .container { max-width: 450px; margin: auto; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid #eaeaea; }
+        
+        /* Professional Text Logo Design */
+        .brand-header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 12px; }
+        .logo-icon { width: 50px; height: 50px; background: #1a73e8; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: bold; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .logo-text-box { text-align: left; }
+        .logo-main-text { font-size: 24px; font-weight: bold; color: #1a73e8; line-height: 1.1; margin-bottom: 2px; }
+        .logo-sub-text { font-size: 14px; color: #34a853; font-weight: bold; }
+        .creator-name { font-size: 10px; color: #777; margin-top: 3px; font-weight: normal; text-transform: uppercase; }
+
+        .step { display: none; }
+        .step.active { display: block; }
+        
+        .preview-container { max-width: 100%; margin: 15px 0; background: #f0f0f0; border-radius: 8px; border: 1px solid #ccc; overflow: hidden; }
+        canvas { max-width: 100%; height: auto; border: 1px solid #ccc; margin-top: 10px; border-radius: 4px; }
+        
+        .controls { text-align: left; background: #fdfdfd; padding: 20px; border-radius: 10px; border: 1px solid #eee; margin: 15px 0; }
+        label { font-size: 13px; font-weight: bold; color: #444; display: block; margin-top: 12px; }
+        input[type="range"], input[type="text"], input[type="color"] { width: 100%; margin-top: 6px; box-sizing: border-box; }
+        input[type="text"] { padding: 11px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        
+        button { background: #1a73e8; color: white; border: none; padding: 14px; border-radius: 8px; cursor: pointer; font-size: 17px; width: 100%; margin-top: 12px; font-weight: bold; }
+        button:hover { background: #1557b0; }
+        
+        .format-btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .format-btns button { background: #34a853; font-size: 15px; padding: 12px 5px; }
+        
+        .kb-box { background: #fff8e1; padding: 15px; border-radius: 8px; border: 1px solid #ffe082; margin-bottom: 15px; }
+        .kb-text { font-size: 26px; color: #d32f2f; font-weight: bold; }
+        
+        /* Final Branded Footer */
+        .footer { margin-top: 30px; padding-top: 18px; border-top: 1px solid #eaeaea; font-size: 14px; color: #555; }
+        .insta-link { display: inline-flex; align-items: center; text-decoration: none; color: #e1306c; font-weight: bold; margin-top: 10px; }
+        .insta-link img { width: 20px; margin-right: 6px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="brand-header">
+        <div class="logo-icon">P</div>
+        <div class="logo-text-box">
+            <div class="logo-main-text">PASSPORT Maker</div>
+            <div class="logo-sub-text">Special Exam Edition</div>
+            <div class="creator-name">by Mantosh Kumar</div>
+        </div>
+    </div>
+
+    <div id="step1" class="step active">
+        <div style="padding: 60px 15px; border: 2px dashed #1a73e8; border-radius: 12px; background: #f8fbff; cursor: pointer;" onclick="document.getElementById('uploadInput').click()">
+            <p style="font-size: 16px; color: #1a73e8; font-weight: bold;">Photo Select Karein</p>
+            <input type="file" id="uploadInput" accept="image/*" style="display:none">
+        </div>
+    </div>
+
+    <div id="step2" class="step">
+        <h3>Step 2: Crop Photo</h3>
+        <div class="preview-container"><img id="cropImage" style="max-width:100%"></div>
+        <button onclick="applyCrop()">Save & Next</button>
+    </div>
+
+    <div id="step3" class="step">
+        <h3>Step 3: Edit Details</h3>
+        <canvas id="borderCanvas"></canvas>
+        <div class="controls">
+            <label>Brightness:</label>
+            <input type="range" id="brightness" min="50" max="150" value="100" oninput="drawFinal()">
+            
+            <label>Border Thickness & Color:</label>
+            <div style="display: flex; gap: 10px;">
+                <input type="range" id="borderWidth" min="0" max="15" value="5" oninput="drawFinal()">
+                <input type="color" id="borderColor" value="#ffffff" onchange="drawFinal()" style="width: 70px; height: 40px; border:none; padding:0;">
+            </div>
+            
+            <label>Student Name:</label>
+            <input type="text" id="userName" placeholder="MANTOSH KUMAR" oninput="drawFinal()">
+            
+            <label>Date of Photo:</label>
+            <input type="text" id="userDate" placeholder="17/04/2026" oninput="drawFinal()">
+        </div>
+        <button onclick="goToExport()">Save & Next</button>
+    </div>
+
+    <div id="step4" class="step">
+        <h3>Step 4: Final Save</h3>
+        <div class="kb-box">
+            <span class="kb-text" id="kbValue">--</span> <span style="font-weight: bold;">KB</span>
+        </div>
+        <label>Adjust Quality (KB Control):</label>
+        <input type="range" id="qualityRange" min="10" max="100" value="90" oninput="updateSizeDisplay()">
+        
+        <div class="format-btns">
+            <button onclick="download('image/jpeg', 'jpg')">JPG</button>
+            <button onclick="download('image/jpeg', 'jpeg')">JPEG</button>
+            <button onclick="download('image/png', 'png')">PNG</button>
+        </div>
+        <button onclick="location.reload()" style="background: #70757a; margin-top: 20px;">New Photo</button>
+    </div>
+
+    <div class="footer">
+        Developed with ❤️ by <b>Mantosh Kumar</b><br>
+        <a href="https://instagram.com/mantoshlive" target="_blank" class="insta-link">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" alt="ig"> 
+            @mantoshlive
+        </a>
+    </div>
+</div>
+
+<script src="cropper.min.js"></script>
+<script>
+    let cropper;
+    const uploadInput = document.getElementById('uploadInput');
+    const cropImage = document.getElementById('cropImage');
+    const borderCanvas = document.getElementById('borderCanvas');
+    const ctx = borderCanvas.getContext('2d');
+
+    function showStep(s) {
+        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+        document.getElementById('step' + s).classList.add('active');
+    }
+
+    uploadInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                cropImage.src = event.target.result;
+                showStep(2);
+                if (cropper) cropper.destroy();
+                setTimeout(() => {
+                    cropper = new Cropper(cropImage, { aspectRatio: 3.5 / 4.5, viewMode: 1 });
+                }, 200);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    function applyCrop() {
+        window.croppedImgData = cropper.getCroppedCanvas({ width: 350, height: 450 });
+        drawFinal();
+        showStep(3);
+    }
+
+    function drawFinal() {
+        const bVal = document.getElementById('brightness').value;
+        const bWidth = parseInt(document.getElementById('borderWidth').value);
+        const bColor = document.getElementById('borderColor').value;
+        const uName = document.getElementById('userName').value.toUpperCase();
+        const uDate = document.getElementById('userDate').value;
+
+        borderCanvas.width = 350; borderCanvas.height = 450;
+        ctx.filter = `brightness(${bVal}%)`;
+        ctx.drawImage(window.croppedImgData, 0, 0, 350, 450);
+        ctx.filter = "none";
+
+        if (bWidth > 0) {
+            ctx.strokeStyle = bColor;
+            ctx.lineWidth = bWidth * 2;
+            ctx.strokeRect(0, 0, 350, 450);
+        }
+
+        if (uName || uDate) {
+            ctx.fillStyle = "white";
+            ctx.fillRect(bWidth, 380, 350 - (bWidth*2), 65);
+            ctx.fillStyle = "black";
+            ctx.textAlign = "center";
+            ctx.font = "bold 18px Arial";
+            ctx.fillText(uName, 175, 405);
+            ctx.font = "15px Arial";
+            ctx.fillText(uDate, 175, 430);
+        }
+    }
+
+    function updateSizeDisplay() {
+        const q = document.getElementById('qualityRange').value / 100;
+        const dataUrl = borderCanvas.toDataURL('image/jpeg', q);
+        const sizeInKB = (dataUrl.split(',')[1].length * (3/4) / 1024).toFixed(2);
+        document.getElementById('kbValue').innerText = sizeInKB;
+    }
+
+    function goToExport() { showStep(4); updateSizeDisplay(); }
+
+    function download(mime, ext) {
+        const q = document.getElementById('qualityRange').value / 100;
+        const link = document.createElement('a');
+        link.download = `Passport_by_Mantosh_${Date.now()}.${ext}`;
+        link.href = borderCanvas.toDataURL(mime, (ext === 'png' ? 1.0 : q));
+        link.click();
+    }
+</script>
+</body>
+</html>
