@@ -8,7 +8,6 @@
         body { font-family: 'Segoe UI', Arial, sans-serif; text-align: center; background: #f4f7f6; padding: 20px; color: #333; }
         .container { max-width: 480px; margin: auto; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid #eaeaea; }
         
-        /* Professional Text Logo Design */
         .brand-header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 12px; }
         .logo-icon { width: 50px; height: 50px; background: #d32f2f; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: bold; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .logo-text-box { text-align: left; }
@@ -30,13 +29,17 @@
         button { background: #d32f2f; color: white; border: none; padding: 14px; border-radius: 8px; cursor: pointer; font-size: 17px; width: 100%; margin-top: 12px; font-weight: bold; }
         button:hover { background: #b71c1c; }
         
+        .btn-group { display: flex; gap: 10px; margin-top: 12px; }
+        .btn-back { background: #70757a !important; width: 35% !important; }
+        .btn-back:hover { background: #5f6368 !important; }
+        .btn-next { width: 65% !important; margin-top: 0 !important; }
+
         .format-btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
         .format-btns button { background: #388e3c; font-size: 15px; padding: 12px 5px; }
         
         .kb-box { background: #fff8e1; padding: 15px; border-radius: 8px; border: 1px solid #ffe082; margin-bottom: 15px; }
         .kb-text { font-size: 26px; color: #d32f2f; font-weight: bold; }
         
-        /* Final Branded Footer */
         .footer { margin-top: 30px; padding-top: 18px; border-top: 1px solid #eaeaea; font-size: 14px; color: #555; }
         .insta-link { display: inline-flex; align-items: center; text-decoration: none; color: #e1306c; font-weight: bold; margin-top: 10px; }
         .insta-link img { width: 20px; margin-right: 6px; }
@@ -48,13 +51,13 @@
     <div class="brand-header">
         <div class="logo-icon">M</div>
         <div class="logo-text-box">
-            <div class="logo-main-text" id="headerTitle">PHOTO & SIGN MAKER</div>
-            <div class="logo-sub-text" id="headerSub">All-in-One Online Resizer</div>
+            <div class="logo-main-text">PHOTO & SIGN MAKER</div>
+            <div class="logo-sub-text">All-in-One Online Resizer</div>
             <div class="creator-name">by Mantosh Kumar</div>
         </div>
     </div>
 
-    <!-- Step 1: Select Type & File -->
+    <!-- Step 1 -->
     <div id="step1" class="step active">
         <div class="controls" style="margin-top:0;">
             <label>क्या बनाना चाहते हैं? (Select Mode):</label>
@@ -66,19 +69,22 @@
         </div>
 
         <div style="padding: 50px 15px; border: 2px dashed #d32f2f; border-radius: 12px; background: #fff8f8; cursor: pointer;" onclick="document.getElementById('uploadInput').click()">
-            <p style="font-size: 16px; color: #d32f2f; font-weight: bold;" id="uploadText">Photo / Signature Select Karein</p>
+            <p style="font-size: 16px; color: #d32f2f; font-weight: bold;">Photo / Signature Select Karein</p>
             <input type="file" id="uploadInput" accept="image/*" style="display:none">
         </div>
     </div>
 
-    <!-- Step 2: Crop -->
+    <!-- Step 2 -->
     <div id="step2" class="step">
-        <h3 id="step2Title">Step 2: Crop Image</h3>
+        <h3>Step 2: Crop Image</h3>
         <div class="preview-container"><img id="cropImage" style="max-width:100%"></div>
-        <button onclick="applyCrop()">Save & Next</button>
+        <div class="btn-group">
+            <button class="btn-back" onclick="showStep(1)">⬅ Back</button>
+            <button class="btn-next" onclick="applyCrop()">Save & Next</button>
+        </div>
     </div>
 
-    <!-- Step 3: Edit -->
+    <!-- Step 3 -->
     <div id="step3" class="step">
         <h3>Step 3: Edit Details</h3>
         <canvas id="borderCanvas"></canvas>
@@ -100,10 +106,13 @@
                 <input type="text" id="userDate" placeholder="17/04/2026" oninput="drawFinal()">
             </div>
         </div>
-        <button onclick="goToExport()">Save & Next</button>
+        <div class="btn-group">
+            <button class="btn-back" onclick="showStep(2)">⬅ Back</button>
+            <button class="btn-next" onclick="goToExport()">Save & Next</button>
+        </div>
     </div>
 
-    <!-- Step 4: Export & Size Adjust -->
+    <!-- Step 4 -->
     <div id="step4" class="step">
         <h3>Step 4: Final Save</h3>
         <div class="kb-box">
@@ -117,7 +126,10 @@
             <button onclick="download('image/jpeg', 'jpeg')">JPEG</button>
             <button onclick="download('image/png', 'png')">PNG</button>
         </div>
-        <button onclick="location.reload()" style="background: #70757a; margin-top: 20px;">Start New</button>
+        <div class="btn-group">
+            <button class="btn-back" onclick="showStep(3)">⬅ Back</button>
+            <button class="btn-next" onclick="location.reload()" style="background: #70757a;">Start New</button>
+        </div>
     </div>
 
     <div class="footer">
@@ -140,11 +152,7 @@
     function updateModeUI() {
         const docType = document.getElementById('docType').value;
         const passportFields = document.getElementById('passportFields');
-        if (docType === 'passport') {
-            passportFields.style.display = 'block';
-        } else {
-            passportFields.style.display = 'none';
-        }
+        passportFields.style.display = (docType === 'passport') ? 'block' : 'none';
     }
 
     function showStep(s) {
@@ -163,9 +171,9 @@
                 showStep(2);
                 if (cropper) cropper.destroy();
                 
-                let cropRatio = 4 / 3; // Default Ration Card
+                let cropRatio = 4 / 3;
                 if (docType === 'passport') cropRatio = 3.5 / 4.5;
-                if (docType === 'signature') cropRatio = 276 / 118; // NEET Signature Ratio
+                if (docType === 'signature') cropRatio = 276 / 118;
 
                 setTimeout(() => {
                     cropper = new Cropper(cropImage, { aspectRatio: cropRatio, viewMode: 1 });
@@ -177,14 +185,10 @@
 
     function applyCrop() {
         const docType = document.getElementById('docType').value;
-        let outWidth = 400;
-        let outHeight = 300;
+        let outWidth = 400, outHeight = 300;
 
-        if (docType === 'passport') {
-            outWidth = 350; outHeight = 450;
-        } else if (docType === 'signature') {
-            outWidth = 276; outHeight = 118; // Screenshot Preset Size
-        }
+        if (docType === 'passport') { outWidth = 350; outHeight = 450; }
+        else if (docType === 'signature') { outWidth = 276; outHeight = 118; }
 
         window.croppedImgData = cropper.getCroppedCanvas({ width: outWidth, height: outHeight });
         drawFinal();
@@ -237,7 +241,6 @@
 
     function goToExport() { 
         const docType = document.getElementById('docType').value;
-        // Signature default quality adjustment to stay under 20KB
         if (docType === 'signature') {
             document.getElementById('qualityRange').value = 70;
         }
