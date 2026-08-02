@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>Ration Card Family Photo Maker - @mantoshlive Edition</title>
+    <title>Photo & Signature Resizer - @mantoshlive Edition</title>
     <link rel="stylesheet" href="cropper.min.css">
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; text-align: center; background: #f4f7f6; padding: 20px; color: #333; }
@@ -24,7 +24,8 @@
         
         .controls { text-align: left; background: #fdfdfd; padding: 20px; border-radius: 10px; border: 1px solid #eee; margin: 15px 0; }
         label { font-size: 13px; font-weight: bold; color: #444; display: block; margin-top: 12px; }
-        input[type="range"], input[type="text"], input[type="color"] { width: 100%; margin-top: 6px; box-sizing: border-box; }
+        input[type="range"], input[type="text"], input[type="color"], select { width: 100%; margin-top: 6px; box-sizing: border-box; }
+        input[type="text"], select { padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
         
         button { background: #d32f2f; color: white; border: none; padding: 14px; border-radius: 8px; cursor: pointer; font-size: 17px; width: 100%; margin-top: 12px; font-weight: bold; }
         button:hover { background: #b71c1c; }
@@ -45,27 +46,39 @@
 
 <div class="container">
     <div class="brand-header">
-        <div class="logo-icon">R</div>
+        <div class="logo-icon">M</div>
         <div class="logo-text-box">
-            <div class="logo-main-text">RATION CARD Maker</div>
-            <div class="logo-sub-text">Family Photo Special (40x30mm)</div>
+            <div class="logo-main-text" id="headerTitle">PHOTO & SIGN MAKER</div>
+            <div class="logo-sub-text" id="headerSub">All-in-One Online Resizer</div>
             <div class="creator-name">by Mantosh Kumar</div>
         </div>
     </div>
 
+    <!-- Step 1: Select Type & File -->
     <div id="step1" class="step active">
-        <div style="padding: 60px 15px; border: 2px dashed #d32f2f; border-radius: 12px; background: #fff8f8; cursor: pointer;" onclick="document.getElementById('uploadInput').click()">
-            <p style="font-size: 16px; color: #d32f2f; font-weight: bold;">Family Photo Select Karein</p>
+        <div class="controls" style="margin-top:0;">
+            <label>क्या बनाना चाहते हैं? (Select Mode):</label>
+            <select id="docType" onchange="updateModeUI()">
+                <option value="ration">Ration Card Family Photo (40x30mm)</option>
+                <option value="passport">Passport Photo (3.5x4.5cm)</option>
+                <option value="signature">Signature Resize (276x118 px / Max 20KB)</option>
+            </select>
+        </div>
+
+        <div style="padding: 50px 15px; border: 2px dashed #d32f2f; border-radius: 12px; background: #fff8f8; cursor: pointer;" onclick="document.getElementById('uploadInput').click()">
+            <p style="font-size: 16px; color: #d32f2f; font-weight: bold;" id="uploadText">Photo / Signature Select Karein</p>
             <input type="file" id="uploadInput" accept="image/*" style="display:none">
         </div>
     </div>
 
+    <!-- Step 2: Crop -->
     <div id="step2" class="step">
-        <h3>Step 2: Crop Family Photo</h3>
+        <h3 id="step2Title">Step 2: Crop Image</h3>
         <div class="preview-container"><img id="cropImage" style="max-width:100%"></div>
         <button onclick="applyCrop()">Save & Next</button>
     </div>
 
+    <!-- Step 3: Edit -->
     <div id="step3" class="step">
         <h3>Step 3: Edit Details</h3>
         <canvas id="borderCanvas"></canvas>
@@ -78,24 +91,33 @@
                 <input type="range" id="borderWidth" min="0" max="15" value="2" oninput="drawFinal()">
                 <input type="color" id="borderColor" value="#ffffff" onchange="drawFinal()" style="width: 70px; height: 40px; border:none; padding:0;">
             </div>
+            
+            <div id="passportFields" style="display:none;">
+                <label>Student Name (Optional):</label>
+                <input type="text" id="userName" placeholder="MANTOSH KUMAR" oninput="drawFinal()">
+                
+                <label>Date of Photo (Optional):</label>
+                <input type="text" id="userDate" placeholder="17/04/2026" oninput="drawFinal()">
+            </div>
         </div>
         <button onclick="goToExport()">Save & Next</button>
     </div>
 
+    <!-- Step 4: Export & Size Adjust -->
     <div id="step4" class="step">
         <h3>Step 4: Final Save</h3>
         <div class="kb-box">
             <span class="kb-text" id="kbValue">--</span> <span style="font-weight: bold;">KB</span>
         </div>
         <label>Adjust Quality (KB Size Control):</label>
-        <input type="range" id="qualityRange" min="10" max="100" value="90" oninput="updateSizeDisplay()">
+        <input type="range" id="qualityRange" min="5" max="100" value="80" oninput="updateSizeDisplay()">
         
         <div class="format-btns">
             <button onclick="download('image/jpeg', 'jpg')">JPG</button>
             <button onclick="download('image/jpeg', 'jpeg')">JPEG</button>
             <button onclick="download('image/png', 'png')">PNG</button>
         </div>
-        <button onclick="location.reload()" style="background: #70757a; margin-top: 20px;">New Photo</button>
+        <button onclick="location.reload()" style="background: #70757a; margin-top: 20px;">Start New</button>
     </div>
 
     <div class="footer">
@@ -115,6 +137,16 @@
     const borderCanvas = document.getElementById('borderCanvas');
     const ctx = borderCanvas.getContext('2d');
 
+    function updateModeUI() {
+        const docType = document.getElementById('docType').value;
+        const passportFields = document.getElementById('passportFields');
+        if (docType === 'passport') {
+            passportFields.style.display = 'block';
+        } else {
+            passportFields.style.display = 'none';
+        }
+    }
+
     function showStep(s) {
         document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
         document.getElementById('step' + s).classList.add('active');
@@ -122,15 +154,21 @@
 
     uploadInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
+        const docType = document.getElementById('docType').value;
+        
         if (file) {
             const reader = new FileReader();
             reader.onload = (event) => {
                 cropImage.src = event.target.result;
                 showStep(2);
                 if (cropper) cropper.destroy();
+                
+                let cropRatio = 4 / 3; // Default Ration Card
+                if (docType === 'passport') cropRatio = 3.5 / 4.5;
+                if (docType === 'signature') cropRatio = 276 / 118; // NEET Signature Ratio
+
                 setTimeout(() => {
-                    // Ration Card Landscape Ratio: 40mm x 30mm (4:3 Ratio)
-                    cropper = new Cropper(cropImage, { aspectRatio: 4 / 3, viewMode: 1 });
+                    cropper = new Cropper(cropImage, { aspectRatio: cropRatio, viewMode: 1 });
                 }, 200);
             };
             reader.readAsDataURL(file);
@@ -138,28 +176,55 @@
     });
 
     function applyCrop() {
-        // Output dimensions tailored for 40x30mm Perfect Print
-        window.croppedImgData = cropper.getCroppedCanvas({ width: 400, height: 300 });
+        const docType = document.getElementById('docType').value;
+        let outWidth = 400;
+        let outHeight = 300;
+
+        if (docType === 'passport') {
+            outWidth = 350; outHeight = 450;
+        } else if (docType === 'signature') {
+            outWidth = 276; outHeight = 118; // Screenshot Preset Size
+        }
+
+        window.croppedImgData = cropper.getCroppedCanvas({ width: outWidth, height: outHeight });
         drawFinal();
         showStep(3);
     }
 
     function drawFinal() {
+        const docType = document.getElementById('docType').value;
         const bVal = document.getElementById('brightness').value;
         const bWidth = parseInt(document.getElementById('borderWidth').value);
         const bColor = document.getElementById('borderColor').value;
+        const uName = document.getElementById('userName').value.toUpperCase();
+        const uDate = document.getElementById('userDate').value;
 
-        borderCanvas.width = 400; 
-        borderCanvas.height = 300;
+        let w = 400, h = 300;
+        if (docType === 'passport') { w = 350; h = 450; }
+        if (docType === 'signature') { w = 276; h = 118; }
+
+        borderCanvas.width = w; 
+        borderCanvas.height = h;
         
         ctx.filter = `brightness(${bVal}%)`;
-        ctx.drawImage(window.croppedImgData, 0, 0, 400, 300);
+        ctx.drawImage(window.croppedImgData, 0, 0, w, h);
         ctx.filter = "none";
 
         if (bWidth > 0) {
             ctx.strokeStyle = bColor;
             ctx.lineWidth = bWidth * 2;
-            ctx.strokeRect(0, 0, 400, 300);
+            ctx.strokeRect(0, 0, w, h);
+        }
+
+        if (docType === 'passport' && (uName || uDate)) {
+            ctx.fillStyle = "white";
+            ctx.fillRect(bWidth, 380, 350 - (bWidth*2), 65);
+            ctx.fillStyle = "black";
+            ctx.textAlign = "center";
+            ctx.font = "bold 18px Arial";
+            ctx.fillText(uName, 175, 405);
+            ctx.font = "15px Arial";
+            ctx.fillText(uDate, 175, 430);
         }
     }
 
@@ -170,12 +235,21 @@
         document.getElementById('kbValue').innerText = sizeInKB;
     }
 
-    function goToExport() { showStep(4); updateSizeDisplay(); }
+    function goToExport() { 
+        const docType = document.getElementById('docType').value;
+        // Signature default quality adjustment to stay under 20KB
+        if (docType === 'signature') {
+            document.getElementById('qualityRange').value = 70;
+        }
+        showStep(4); 
+        updateSizeDisplay(); 
+    }
 
     function download(mime, ext) {
         const q = document.getElementById('qualityRange').value / 100;
+        const docType = document.getElementById('docType').value;
         const link = document.createElement('a');
-        link.download = `Ration_Card_Photo_by_Mantosh_${Date.now()}.${ext}`;
+        link.download = `${docType}_by_Mantosh_${Date.now()}.${ext}`;
         link.href = borderCanvas.toDataURL(mime, (ext === 'png' ? 1.0 : q));
         link.click();
     }
